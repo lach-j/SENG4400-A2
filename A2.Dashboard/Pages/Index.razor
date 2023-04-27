@@ -1,0 +1,73 @@
+﻿@page "/"
+
+<PageTitle>Prime Results</PageTitle>
+
+@using A2.Dashboard.Data
+@using A2.Shared
+@using System.Timers
+@inject WeatherForecastService ForecastService
+
+<h1>Prime Results</h1>
+
+<p>This page lists the 50 most recent prime number requests and the amount of time it took took to calculate.</p>
+
+@if (forecasts == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Time Taken</th>
+            <th>Prime Numbers</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var forecast in forecasts)
+        {
+            <tr>
+                <td>@forecast.TimeTaken</td>
+                <td>@string.Join(",",forecast.Answer)s</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<AnswerDto> forecasts;
+    private static Timer _timer;
+    
+    protected override Task OnInitializedAsync()
+    {
+        _timer = new Timer(1000);
+        _timer.Elapsed += CountDownTimer;
+        _timer.Enabled = true;
+        forecasts = ForecastService.RecentAnswers.ToList();
+        return Task.CompletedTask;
+    }
+    
+    public async void CountDownTimer(Object source, ElapsedEventArgs e)
+    {
+        await InvokeAsync(async () =>
+        {
+            forecasts = ForecastService.RecentAnswers.ToList();
+
+            if (forecasts.Any())
+            {
+                forecasts.Reverse();
+            }
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
+
+}

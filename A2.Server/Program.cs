@@ -5,7 +5,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<AppSettings>(options => builder.Configuration.GetSection("AppSettings").Bind(options));
 
-builder.Services.AddSingleton<KafkaPubSub>();
 builder.Services.AddSingleton<NumberPublisher>();
 var app = builder.Build();
 

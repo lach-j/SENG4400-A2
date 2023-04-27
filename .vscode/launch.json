@@ -1,0 +1,42 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+    
+        {
+            "name": "A2.Dashboard",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/A2.Dashboard/bin/Debug/net6.0/A2.Dashboard.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/A2.Dashboard",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": "A2.Client",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/A2.Client/bin/Debug/net6.0/A2.Client.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/A2.Client",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": "A2.Server",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/A2.Server/bin/Debug/net6.0/A2.Server.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/A2.Server",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        }
+    ]
+}

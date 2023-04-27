@@ -7,6 +7,7 @@ public class AppSettings
         Kafka = new KafkaSettings();
     }
     public int MaxNumber { get; set; } = 1000000;
+    public int DelayInterval { get; set; } = 1000;
     public KafkaSettings Kafka { get; set; }
 }
 

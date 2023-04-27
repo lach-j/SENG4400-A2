@@ -1,76 +1,95 @@
 ﻿using System.Diagnostics;
+using System.Text;
 using A2.Shared;
-using Confluent.Kafka;
+using Azure.Messaging.ServiceBus;
 using Newtonsoft.Json;
 
-var consumerConfig = new ConsumerConfig()
+internal class Program
 {
-    BootstrapServers = "localhost:9092",
-    GroupId = "Group1"
-};
-
-var foundNums = new List<int>();
-
-Console.WriteLine("Connecting to Kafka ...");
-using var consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
-
-consumer.Subscribe(Constants.Kafka.TopicName);
-
-(List<int>, long) GetPrimes(int b)
-{
-    Console.WriteLine($"Calculating Primes For {b}");
-    var nums = new List<int>();
-    var stopwatch = new Stopwatch();
-    stopwatch.Start();
-
-    var startIdx = 1;
-
-    if (foundNums.Any())
+    private static async Task Main(string[] args)
     {
-        nums = foundNums.Where(n => n <= b).ToList();
-        if (foundNums.Last() >= b)
+        var clientOptions = new ServiceBusClientOptions()
         {
+            TransportType = ServiceBusTransportType.AmqpWebSockets
+        };
+
+        var completionSource = new TaskCompletionSource<object>();
+        var cancellationToken = new CancellationToken();
+
+        var sbClient = new ServiceBusClient("Endpoint=sb://a2-servicebus.servicebus.windows.net/;SharedAccessKeyName=ClientAccess;SharedAccessKey=hH6mOSprWSK3ZsaQ0LmUCb1eF/gFKypiN+ASbFAy5ws=;EntityPath=primenums", clientOptions);
+        var listener = sbClient.CreateProcessor("primenums");
+
+        listener.ProcessMessageAsync += MessageHandler;
+        listener.ProcessErrorAsync += ErrorHandler;
+
+        await listener.StartProcessingAsync(cancellationToken);
+
+        await completionSource.Task;
+
+        (List<int>, long) GetPrimes(int b)
+        {
+            Console.WriteLine($"Calculating Primes For {b}");
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            var primeSet = new HashSet<int>();
+            var primes = new List<int>();
+
+            for (var x = 2; x < b; x++)
+            {
+                for (var y = x * 2; y < b; y += x)
+                {
+                    primeSet.Add(y);
+                }
+            }
+
+            for (var z = 2; z < b; z++)
+            {
+                if (!primeSet.Contains(z))
+                {
+                    primes.Add(z);
+                }
+            }
+
             stopwatch.Stop();
-            return (nums, stopwatch.ElapsedMilliseconds);
+            return (primes, stopwatch.ElapsedMilliseconds);
         }
-        else
+
+
+        async Task MessageHandler(ProcessMessageEventArgs args)
         {
-            startIdx = foundNums.Last() + 1;
+
+            var consumeResult = args.Message.Body.ToString();
+            var message = JsonConvert.DeserializeObject<QuestionMessage>(consumeResult);
+            var (primes, ms) = GetPrimes(Convert.ToInt32(message.Question));
+
+            Console.WriteLine($"calculated primes  [<List>[{primes.Count}]] in {ms}ms");
+
+            try
+            {
+                var client = new HttpClient();
+                const string authenticationString = "admin:password";
+                var base64EncodedAuthenticationString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
+
+                var requestMessage = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7189/api/Answers");
+                requestMessage.Headers.Add("Authorization", $"Basic {base64EncodedAuthenticationString}");
+                requestMessage.Content =
+                    new StringContent(JsonConvert.SerializeObject(new AnswerDto() { TimeTaken = ms, Answer = primes }),
+                        Encoding.UTF8, "application/json");
+                var response = await client.SendAsync(requestMessage);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e.Message);
+            }
+            await args.CompleteMessageAsync(args.Message);
+        }
+
+        Task ErrorHandler(ProcessErrorEventArgs args)
+        {
+            Console.WriteLine(args.Exception.ToString());
+            return Task.CompletedTask;
         }
     }
-
-    for (var i = startIdx; i <= b; i++)
-    {
-        if (i is 1 or 0) continue;
-
-        var flag = 1;
-
-        for (var j = 2; j <= i / 2; ++j)
-        {
-            if (i % j != 0) continue;
-            flag = 0;
-            break;
-        }
-
-        if (flag == 1) nums.Add(i);
-    }
-    
-    foundNums.AddRange(nums);
-    foundNums.Sort();
-    
-    stopwatch.Stop();
-
-    return (nums, stopwatch.ElapsedMilliseconds);
 }
-
-Console.WriteLine("Waiting for first message ...");
-while (true)
-{
-    var consumeResult = consumer.Consume();
-    var message = JsonConvert.DeserializeObject<QuestionMessage>(consumeResult.Message.Value);
-    Console.WriteLine(consumeResult.Message.Value);
-    var (primes, ms) = GetPrimes(Convert.ToInt32(message.Question));
-    
-    Console.WriteLine($"calculated primes  [<List>[{primes.Count}]] in {ms}ms");
-}
-consumer.Close();
