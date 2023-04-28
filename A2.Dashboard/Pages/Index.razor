@@ -5,13 +5,13 @@
 @using A2.Dashboard.Data
 @using A2.Shared
 @using System.Timers
-@inject WeatherForecastService ForecastService
+@inject AnswerService AnswerService
 
 <h1>Prime Results</h1>
 
 <p>This page lists the 50 most recent prime number requests and the amount of time it took took to calculate.</p>
 
-@if (forecasts == null)
+@if (_answers == null)
 {
     <p>
         <em>Loading...</em>
@@ -27,11 +27,11 @@ else
         </tr>
         </thead>
         <tbody>
-        @foreach (var forecast in forecasts)
+        @foreach (var answer in _answers)
         {
             <tr>
-                <td>@forecast.TimeTaken</td>
-                <td>@string.Join(",",forecast.Answer)</td>
+                <td>@answer.TimeTaken</td>
+                <td>@string.Join(",",answer.Answer)</td>
             </tr>
         }
         </tbody>
@@ -39,35 +39,37 @@ else
 }
 
 @code {
-    private List<AnswerDto> forecasts;
-    private static Timer _timer;
-    
+    private List<AnswerDto>? _answers;
+    private static readonly Timer Timer = new(1000);
+
     protected override Task OnInitializedAsync()
     {
-        _timer = new Timer(1000);
-        _timer.Elapsed += CountDownTimer;
-        _timer.Enabled = true;
-        forecasts = ForecastService.RecentAnswers.ToList();
+        Timer.Elapsed += CountDownTimer;
+        Timer.Enabled = true;
+        _answers = GetReversedAnswers();
         return Task.CompletedTask;
     }
-    
-    public async void CountDownTimer(Object source, ElapsedEventArgs e)
-    {
-        await InvokeAsync(async () =>
-        {
-            forecasts = ForecastService.RecentAnswers.ToList();
 
-            if (forecasts.Any())
-            {
-                forecasts.Reverse();
-            }
+    private async void CountDownTimer(object? source, ElapsedEventArgs e)
+    {
+        await InvokeAsync(() =>
+        {
+            _answers = GetReversedAnswers();
             StateHasChanged();
+            return Task.CompletedTask;
         });
     }
 
-    public void Dispose()
+    private List<AnswerDto> GetReversedAnswers()
     {
-        _timer?.Dispose();
+        var answers = AnswerService.RecentAnswers.ToList();
+
+        if (answers.Any())
+        {
+            answers.Reverse();
+        }
+
+        return answers;
     }
 
 }

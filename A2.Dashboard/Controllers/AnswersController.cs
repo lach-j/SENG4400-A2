@@ -10,16 +10,16 @@ namespace A2.Dashboard.Controllers;
 [Authorize]
 public class AnswersController : Controller
 {
-    private readonly WeatherForecastService _weatherForecastService;
-    public AnswersController(WeatherForecastService weatherForecastService)
+    private readonly AnswerService _answerService;
+    public AnswersController(AnswerService answerService)
     {
-        _weatherForecastService = weatherForecastService;
+        _answerService = answerService;
     }
 
     [HttpPost]
     public IActionResult Post ([FromBody] AnswerDto answer)
     {
-        _weatherForecastService.AddAnswer(answer);
+        _answerService.AddAnswer(answer);
         return Ok();
     }
 }
