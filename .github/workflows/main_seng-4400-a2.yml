@@ -52,8 +52,8 @@ jobs:
         with:
           name: .net-app
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
+      - name: Deploy Dashboard
+        id: deploy-dashboard-to-webapp
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'SENG-4400-A2-dashboard'
@@ -62,8 +62,8 @@ jobs:
           package: ./dashboard
 
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
+      - name: Deploy Server
+        id: deploy-server-to-webapp
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'SENG-4400-A2-dashboard'
