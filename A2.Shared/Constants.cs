@@ -2,8 +2,8 @@
 
 public static class Constants
 {
-    public static class Kafka
+    public static class ServiceBus
     {
-        public static string TopicName = "Yep";
+        public const string QueueName = "primenums";
     }
 }

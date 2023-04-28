@@ -4,7 +4,6 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-    
         {
             "name": "A2.Dashboard",
             "type": "coreclr",
@@ -37,6 +36,12 @@
             "cwd": "${workspaceFolder}/A2.Server",
             "console": "internalConsole",
             "stopAtEntry": false
+        },
+        {
+            "name": "Attach to .NET Functions",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:azureFunctions.pickProcess}"
         }
     ]
 }

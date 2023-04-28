@@ -16,16 +16,16 @@ public class NumberPublisher
         _logger = logger;
         _appSettings = appSettings.Value;
     }
-    
+
     public async Task StartAsync()
     {
         var random = new Random();
         var clientOptions = new ServiceBusClientOptions()
-{ 
-    TransportType = ServiceBusTransportType.AmqpWebSockets
-};
-var client = new ServiceBusClient("", clientOptions);
-var sender = client.CreateSender("primenums");
+        {
+            TransportType = ServiceBusTransportType.AmqpWebSockets
+        };
+        var client = new ServiceBusClient(_appSettings.ServiceBusConnectionString, clientOptions);
+        var sender = client.CreateSender(Constants.ServiceBus.QueueName);
         while (true)
         {
             var num = random.Next(1, _appSettings.MaxNumber);
