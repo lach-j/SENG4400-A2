@@ -42,6 +42,11 @@ public static class PrimeNumsTrigger
         stopwatch.Stop();
         return (primes, stopwatch.ElapsedMilliseconds);
     }
+    
+    private static string GetEnvironmentVariable(string name)
+    {
+        return Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process);
+    }
 
     [FunctionName("PrimeNumsTrigger")]
     public static async Task RunAsync(
@@ -55,11 +60,17 @@ public static class PrimeNumsTrigger
         try
         {
             var client = new HttpClient();
+
+            var username = GetEnvironmentVariable("A2Dashboard_USERNAME");
+            var password = GetEnvironmentVariable("A2Dashboard_PASSWORD");
+            
             const string authenticationString = "admin:password";
             var base64EncodedAuthenticationString =
                 Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7189/api/Answers");
+            
+            var baseUrl = GetEnvironmentVariable("A2Dashboard_BASEURL");
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/api/Answers");
             requestMessage.Headers.Add("Authorization", $"Basic {base64EncodedAuthenticationString}");
             requestMessage.Content =
                 new StringContent(JsonConvert.SerializeObject(new AnswerDto { TimeTaken = ms, Answer = primes }),
