@@ -15,19 +15,17 @@ public static class PrimeNumsTrigger
 {
     private static (List<int>, long) GetPrimes(int b)
     {
-        Console.WriteLine($"Calculating Primes For {b}");
-
         var stopwatch = new Stopwatch();
         stopwatch.Start();
 
         var primeSet = new HashSet<int>();
         var primes = new List<int>();
 
-        for (var x = 2; x < b; x++)
+        for (var i = 2; i < b; i++)
         {
-            for (var y = x * 2; y < b; y += x)
+            for (var j = i * 2; j < b; j += i)
             {
-                primeSet.Add(y);
+                primeSet.Add(j);
             }
         }
 
@@ -55,8 +53,6 @@ public static class PrimeNumsTrigger
     {
         var (primes, ms) = GetPrimes(Convert.ToInt32(message.Question));
 
-        Console.WriteLine($"calculated primes  [<List>[{primes.Count}]] in {ms}ms");
-
         try
         {
             var client = new HttpClient();
@@ -68,18 +64,20 @@ public static class PrimeNumsTrigger
             var base64EncodedAuthenticationString =
                 Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
 
+            var answer = JsonConvert.SerializeObject(new AnswerDto { TimeTaken = ms, Answer = primes });
             
             var baseUrl = GetEnvironmentVariable("A2Dashboard_BASEURL");
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/api/Answers");
             requestMessage.Headers.Add("Authorization", $"Basic {base64EncodedAuthenticationString}");
             requestMessage.Content =
-                new StringContent(JsonConvert.SerializeObject(new AnswerDto { TimeTaken = ms, Answer = primes }),
+                new StringContent(answer,
                     Encoding.UTF8, "application/json");
-            var response = await client.SendAsync(requestMessage);
+            log.LogInformation(answer);
+            await client.SendAsync(requestMessage);
         }
         catch (Exception e)
         {
-            Console.Error.WriteLine(e.Message);
+            log.LogError(e.Message, e);
         }
     }
 }
