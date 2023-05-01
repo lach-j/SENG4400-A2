@@ -71,5 +71,5 @@ jobs:
         with:
           app-name: 'SENG4400-A2-Server'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DBFD887AB0F64F578B12D90AE582B058 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6F62746BC1D64006877DD215FAA0F608 }}
           package: ./server
