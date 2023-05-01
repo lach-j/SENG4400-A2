@@ -64,7 +64,7 @@ public static class PrimeNumsTrigger
             var username = GetEnvironmentVariable("A2Dashboard_USERNAME");
             var password = GetEnvironmentVariable("A2Dashboard_PASSWORD");
             
-            const string authenticationString = "admin:password";
+            var authenticationString = $"{username}:{password}";
             var base64EncodedAuthenticationString =
                 Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
 
