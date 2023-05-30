@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using A2.Shared;
 using Microsoft.Azure.WebJobs;
@@ -67,17 +65,7 @@ public static class PrimeNumsTrigger
                 Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
 
             var answerDto = new AnswerDto { TimeTaken = ms, Answer = primes };
-            
-            var pairs = answerDto.GetType()
-                .GetProperties()
-                .Select(p => new {
-                    Property = p,
-                    Attribute = p
-                        .GetCustomAttributes(
-                            typeof(JsonPropertyAttribute), true)
-                        .Cast<JsonPropertyNameAttribute>()
-                        .FirstOrDefault() });
-            
+
             var answer = JsonConvert.SerializeObject(answerDto);
             
             var baseUrl = GetEnvironmentVariable("A2Dashboard_BASEURL");
