@@ -10,6 +10,7 @@ builder.Services.AddSingleton<AnswerService>();
 builder.Services.AddAuthentication("BasicAuthentication")
     .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
 
+builder.Services.AddControllers().AddNewtonsoftJson();
 
 var app = builder.Build();
 
